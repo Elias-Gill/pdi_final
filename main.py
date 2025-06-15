@@ -16,8 +16,9 @@ CLASES = {
 
 
 # Recorta la región de interés y la normaliza a un tamaño fijo
-def normalizar_componente(comp, size=(64, 64)):
-    x, y = np.where(comp)
+def normalizar_componente(comp):
+    size = (64, 64)
+    x, y = np.where(comp)  # buscar los pixeles distintos del fondo
     recorte = comp[min(x) : max(x) + 1, min(y) : max(y) + 1]
     return cv2.resize(recorte.astype(np.uint8), size, interpolation=cv2.INTER_NEAREST)
 
@@ -30,8 +31,8 @@ for nombre_archivo in os.listdir(path):
     if nombre in CLASES:
         imagen = cv2.imread(os.path.join(path, nombre_archivo), 0)
         _, binaria = cv2.threshold(imagen, 127, 1, cv2.THRESH_BINARY_INV)
-        binaria = normalizar_componente(binaria)
-        simbolos[nombre] = binaria.astype(np.uint8)
+        normalizada = normalizar_componente(binaria)
+        simbolos[nombre] = normalizada.astype(np.uint8)
 
 
 # Compara dos binarios usando XOR + conteo de diferencias

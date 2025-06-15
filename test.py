@@ -1,25 +1,9 @@
 import os
 
-import cv2
 from main import CLASES, reconocer_jeroglificos
 
 # Diccionario inverso para obtener nombre desde letra
 INV_CLASES = {v: k for k, v in CLASES.items()}
-
-
-def cargar_simbolos(path="simbolos"):
-    simbolos = {}
-    for archivo in os.listdir(path):
-        nombre = os.path.splitext(archivo)[0].lower()
-        if nombre not in CLASES:
-            continue
-
-        ruta = os.path.join(path, archivo)
-        imagen = cv2.imread(ruta, 0)
-        _, binaria = cv2.threshold(imagen, 127, 1, cv2.THRESH_BINARY_INV)
-        simbolos[nombre] = binaria.astype("uint8")
-
-    return simbolos
 
 
 def test_simbolos_individuales():
