@@ -2,7 +2,7 @@ import os
 
 import cv2
 import numpy as np
-from scipy.ndimage import label
+import scipy
 
 # Diccionario de etiquetas
 CLASES = {
@@ -17,10 +17,14 @@ CLASES = {
 
 # Recorta la región de interés y la normaliza a un tamaño fijo
 def normalizar_componente(comp):
-    size = (64, 64)
+    # recortar la imagen
     x, y = np.where(comp)  # buscar los pixeles distintos del fondo
     recorte = comp[min(x) : max(x) + 1, min(y) : max(y) + 1]
-    return cv2.resize(recorte.astype(np.uint8), size, interpolation=cv2.INTER_NEAREST)
+
+    # reescalar a 64x64 pixeles usando "nearest neighbor"
+    return cv2.resize(
+        recorte.astype(np.uint8), (64, 64), interpolation=cv2.INTER_NEAREST
+    )
 
 
 # Cargar los simbolos de referencia
@@ -47,10 +51,7 @@ def clasificar(componente):
     mejor = "?"
     menor_dif = float("inf")
     for nombre, ref in simbolos.items():
-        ref_resized = cv2.resize(
-            ref, componente.shape[::-1], interpolation=cv2.INTER_NEAREST
-        )
-        dif = diferencia_binaria(componente, ref_resized)
+        dif = diferencia_binaria(componente, ref)
         if dif < menor_dif:
             menor_dif = dif
             mejor = CLASES[nombre]
@@ -59,10 +60,10 @@ def clasificar(componente):
 
 # Procesa la imagen principal
 def reconocer_jeroglificos(path_imagen):
-    # leer la imagen en formato binario
+    # leer la imagen en formato binario e invertido
     _, img = cv2.threshold(cv2.imread(path_imagen, 0), 127, 1, cv2.THRESH_BINARY_INV)
 
-    etiquetada, num = label(img)
+    etiquetada, num = scipy.ndimage.label(img)
     encontrados = []
 
     # Por cada elemento etiquetado aplicar el reconocimiento
@@ -76,6 +77,6 @@ def reconocer_jeroglificos(path_imagen):
 
 
 if __name__ == "__main__":
-    path_imagen = "./Ejemplo1.png"  # Cambiar por la imagen a evaluar
+    path_imagen = "./Ejemplo2.png"  # Cambiar por la imagen a evaluar
     resultado = reconocer_jeroglificos(path_imagen)
     print("Resultado:", resultado)
